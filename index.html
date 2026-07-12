@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>АРШАН — Аренда · Реализация · Шопинг · Акции · Новинки</title>
+<link rel="icon" type="image/png" href="image.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F4FB;
+    --surface: #FFFFFF;
+    --card: #FFFFFF;
+    --primary: #6C3CE9;
+    --primary-dark: #4B21B8;
+    --primary-light: #F0EBFE;
+    --accent: #FF7A3D;
+    --gold: #F5B93F;
+    --text: #1A1A22;
+    --text-muted: #6B7280;
+    --border: #E9E5F5;
+    --shadow: 0 2px 14px rgba(76,33,184,0.08);
+    --radius: 16px;
+    --radius-sm: 9px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  ::selection { background: var(--primary); color: #fff; }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes floatSlow { 0%,100% { transform: translateY(0) rotate(-8deg); } 50% { transform: translateY(-14px) rotate(-4deg); } }
+  @keyframes shimmer { 0% { background-position: -300px 0; } 100% { background-position: 300px 0; } }
+  @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+  @keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(108,60,233,0.35); } 70% { box-shadow: 0 0 0 12px rgba(108,60,233,0); } 100% { box-shadow: 0 0 0 0 rgba(108,60,233,0); } }
+  @keyframes underlineGrow { from { width: 0; } to { width: 100%; } }
+  .products-grid .product-card { animation: fadeInUp 0.5s ease backwards; }
+  .products-grid .product-card:nth-child(1) { animation-delay: .02s; }
+  .products-grid .product-card:nth-child(2) { animation-delay: .06s; }
+  .products-grid .product-card:nth-child(3) { animation-delay: .10s; }
+  .products-grid .product-card:nth-child(4) { animation-delay: .14s; }
+  .products-grid .product-card:nth-child(5) { animation-delay: .18s; }
+  .products-grid .product-card:nth-child(6) { animation-delay: .22s; }
+  .products-grid .product-card:nth-child(n+7) { animation-delay: .26s; }
+  .page.active { animation: fadeIn 0.35s ease; }
+  .overlay.open .modal { animation: popIn 0.28s cubic-bezier(.2,.9,.3,1.2); }
+
+  /* NAV */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    padding: 0 24px;
+  }
+  .nav-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; gap: 20px;
+    height: 64px;
+  }
+  .logo {
+    font-family: 'Manrope', sans-serif;
+    font-size: 24px; font-weight: 800; color: var(--primary-dark);
+    letter-spacing: -0.5px; text-decoration: none;
+    display: flex; align-items: center; gap: 9px;
+    position: relative;
+  }
+  .logo-mark {
+    width: 40px; height: 40px; border-radius: 10px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(108,60,233,0.25);
+    flex-shrink: 0; background: #fff;
+  }
+  .logo-mark img { width: 100%; height: 100%; object-fit: cover; }
+  .logo span { color: var(--accent); }
+  .logo-tagline {
+    display: block; font-size: 9.5px; font-weight: 600; letter-spacing: 0.6px;
+    color: var(--text-muted); margin-top: 1px; text-transform: uppercase;
+  }
+  .search-wrap {
+    flex: 1; max-width: 480px;
+    position: relative;
+  }
+  .search-wrap input {
+    width: 100%; padding: 10px 16px 10px 42px;
+    border: 1.5px solid var(--border); border-radius: 50px;
+    font-size: 14px; background: var(--bg);
+    outline: none; transition: border 0.2s;
+    font-family: inherit;
+  }
+  .search-wrap input:focus { border-color: var(--primary); background: #fff; }
+  .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+  .nav-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .btn {
+    padding: 9px 20px; border-radius: 50px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    border: none; transition: all 0.18s; font-family: inherit;
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; box-shadow: 0 3px 12px rgba(108,60,233,0.3); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(108,60,233,0.4); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-ghost { background: transparent; color: var(--text); border: 1.5px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .btn-accent { background: linear-gradient(135deg, var(--accent), var(--gold)); color: #fff; box-shadow: 0 3px 12px rgba(255,122,61,0.35); }
+  .btn-accent:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,122,61,0.45); }
+  .avatar-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; cursor: pointer; border: none;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .avatar-btn:hover { opacity: 0.9; transform: scale(1.06); }
+  .nav-icon-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--bg); border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; position: relative; transition: border-color 0.2s;
+  }
+  .nav-icon-btn:hover { border-color: var(--primary); }
+  .badge {
+    position: absolute; top: -4px; right: -4px;
+    background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 700; border-radius: 50%;
+    width: 17px; height: 17px; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(120deg, #4B21B8 0%, #6C3CE9 45%, #9B6BFF 75%, #FF7A3D 130%);
+    background-size: 200% 200%; animation: gradientShift 12s ease infinite;
+    color: #fff; padding: 56px 24px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '✨';
+    position: absolute; right: -10px; top: -30px;
+    font-size: 190px; opacity: 0.12;
+    transform: rotate(-15deg);
+    animation: floatSlow 7s ease-in-out infinite;
+  }
+  .hero::after {
+    content: '🛍'; position: absolute; left: 6%; bottom: -22px;
+    font-size: 110px; opacity: 0.10;
+    animation: floatSlow 8s ease-in-out infinite reverse;
+  }
+  .hero-inner { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+  .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .hero-badge {
+    background: rgba(255,255,255,0.16); backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.3); padding: 5px 13px;
+    border-radius: 50px; font-size: 12px; font-weight: 600;
+    animation: fadeInUp 0.5s ease backwards;
+  }
+  .hero-badge:nth-child(1){animation-delay:.05s}
+  .hero-badge:nth-child(2){animation-delay:.1s}
+  .hero-badge:nth-child(3){animation-delay:.15s}
+  .hero-badge:nth-child(4){animation-delay:.2s}
+  .hero-badge:nth-child(5){animation-delay:.25s}
+  .hero h1 { font-family:'Manrope',sans-serif; font-size: 40px; font-weight: 800; line-height: 1.12; margin-bottom: 10px; animation: fadeInUp .6s ease; }
+  .hero p { font-size: 16px; opacity: 0.9; margin-bottom: 24px; animation: fadeInUp .7s ease; }
+  .hero-search {
+    display: flex; gap: 10px; max-width: 520px;
+  }
+  .hero-search input {
+    flex: 1; padding: 14px 20px;
+    border: none; border-radius: 50px;
+    font-size: 15px; outline: none; font-family: inherit;
+  }
+  .hero-search button {
+    padding: 14px 26px; background: var(--accent);
+    color: #fff; border: none; border-radius: 50px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+  }
+
+  /* FEED */
+  .feed-section { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+  .section-title {
+    font-size: 20px; font-weight: 700; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .product-card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden;
+    cursor: pointer; transition: transform 0.18s, box-shadow 0.18s;
+    border: 1px solid var(--border);
+  }
+  .product-card:hover { transform: translateY(-5px) scale(1.015); box-shadow: 0 14px 32px rgba(76,33,184,0.16); border-color: var(--primary); }
+  .product-card:hover .card-img img { transform: scale(1.06); }
+  .card-img { position: relative; overflow: hidden; }
+  .card-img img { transition: transform 0.35s ease; }
+  .card-img {
+    width: 100%; height: 200px;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px;
+  }
+  .card-img img { width: 100%; height: 100%; object-fit: contain; background: #fff; }
+  .card-body { padding: 14px; }
+  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
+  .card-price { font-size: 18px; font-weight: 800; color: var(--primary); }
+  .card-meta { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+  /* MODAL / OVERLAY */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45); z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius);
+    width: 90%; max-width: 480px; max-height: 90vh;
+    overflow-y: auto; padding: 32px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    background: var(--bg); border: none; border-radius: 50%;
+    width: 32px; height: 32px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--text-muted);
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+  .modal-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 14px; font-family: inherit; outline: none;
+    transition: border 0.2s; background: #fff;
+  }
+  .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
+  .form-group textarea { resize: vertical; min-height: 90px; }
+  .form-error { color: #e53e3e; font-size: 13px; margin-top: 8px; display: none; }
+  .form-error.show { display: block; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--bg); border-radius: var(--radius-sm); padding: 4px; }
+  .tab { flex: 1; padding: 9px; text-align: center; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: none; font-family: inherit; color: var(--text-muted); transition: all 0.15s; }
+  .tab.active { background: #fff; color: var(--primary); box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+
+  /* PRODUCT PAGE */
+  .product-page { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+  .back-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--text-muted); cursor: pointer; margin-bottom: 24px; background: none; border: none; font-family: inherit; }
+  .back-btn:hover { color: var(--primary); }
+  .product-layout { display: grid; grid-template-columns: 1fr 380px; gap: 32px; }
+  @media(max-width: 760px) { .product-layout { grid-template-columns: 1fr; } }
+  .product-gallery { border-radius: var(--radius); overflow: hidden; background: var(--surface); border: 1px solid var(--border); }
+  .product-main-img { width: 100%; height: 420px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 80px; cursor: zoom-in; position: relative; }
+  .product-main-img img { width: 100%; height: 100%; object-fit: contain; }
+  .product-thumbs { display: flex; gap: 10px; padding: 12px; overflow-x: auto; }
+  .thumb { width: 70px; height: 70px; border-radius: var(--radius-sm); object-fit: cover; cursor: pointer; border: 2px solid transparent; flex-shrink: 0; background: var(--bg); overflow: hidden; }
+  .thumb.active { border-color: var(--primary); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .product-info { background: var(--surface); border-radius: var(--radius); padding: 28px; border: 1px solid var(--border); box-shadow: var(--shadow); height: fit-content; }
+  .product-name { font-size: 24px; font-weight: 800; margin-bottom: 8px; line-height: 1.2; }
+  .product-price { font-size: 32px; font-weight: 800; color: var(--primary); margin-bottom: 16px; }
+  .product-desc { font-size: 14px; line-height: 1.65; color: #444; margin-bottom: 24px; }
+  .product-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--primary-light); color: var(--primary); font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 50px; margin-bottom: 20px; }
+
+  /* CONTACT INFO BLOCK */
+  .contact-box {
+    margin-top: 18px; padding: 16px; border-radius: var(--radius-sm);
+    background: var(--primary-light); border: 1px solid var(--border);
+    animation: fadeInUp 0.4s ease;
+  }
+  .contact-box-title { font-size: 12px; font-weight: 700; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .contact-row { display: flex; align-items: center; gap: 10px; font-size: 14px; padding: 6px 0; color: var(--text); }
+  .contact-row svg { flex-shrink: 0; color: var(--primary); }
+  .contact-row a { color: var(--text); text-decoration: none; transition: color 0.15s; }
+  .contact-row a:hover { color: var(--primary); text-decoration: underline; }
+
+  /* CONTACT FORM FIELDS (admin) */
+  .contact-fields-box {
+    border: 1.5px dashed var(--border); border-radius: var(--radius-sm);
+    padding: 16px; margin-top: 4px; background: var(--bg);
+  }
+  .contact-fields-box .fields-hint { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+  /* LIGHTBOX */
+  .lightbox-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92); z-index: 9999;
+    align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .lightbox-overlay.open { display: flex; }
+  .lightbox-img-wrap {
+    position: relative; max-width: 95vw; max-height: 88vh;
+    overflow: hidden; cursor: grab; user-select: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .lightbox-img-wrap.grabbing { cursor: grabbing; }
+  .lightbox-img-wrap img {
+    max-width: 95vw; max-height: 88vh;
+    object-fit: contain; display: block;
+    transform-origin: center center;
+    transition: transform 0.1s ease;
+    pointer-events: none;
+  }
+  .lightbox-close {
+    position: fixed; top: 16px; right: 20px;
+    background: rgba(255,255,255,0.15); border: none; border-radius: 50%;
+    width: 44px; height: 44px; color: #fff; font-size: 22px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px); z-index: 10000;
+  }
+  .lightbox-close:hover { background: rgba(255,255,255,0.28); }
+  .lightbox-zoom-btns {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 12px; z-index: 10000;
+  }
+  .lz-btn {
+    background: rgba(255,255,255,0.18); border: none; border-radius: 50%;
+    width: 48px; height: 48px; color: #fff; font-size: 22px;
+    cursor: pointer; backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center;
+  }
+  .lz-btn:hover { background: rgba(255,255,255,0.32); }
+  .lightbox-hint { color: rgba(255,255,255,0.45); font-size: 12px; margin-top: 10px; }
+
+  /* MESSENGER BUTTONS */
+  .contact-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 50px;
+    font-size: 14px; font-weight: 600; text-decoration: none;
+    transition: all 0.18s; cursor: pointer; border: none;
+    margin-top: 8px; width: 100%; justify-content: center;
+  }
+  .contact-btn-tg {
+    background: linear-gradient(135deg, #229ED9, #0088CC);
+    color: #fff; box-shadow: 0 3px 12px rgba(0,136,204,0.3);
+  }
+  .contact-btn-tg:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,136,204,0.4); }
+  .contact-btn-max {
+    background: linear-gradient(135deg, #7B3FF2, #5B00D2);
+    color: #fff; box-shadow: 0 3px 12px rgba(91,0,210,0.3);
+  }
+  .contact-btn-max:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(91,0,210,0.4); }
+
+  /* CHAT PAGE */
+  .chat-layout { display: grid; grid-template-columns: 300px 1fr; height: calc(100vh - 65px); }
+  @media(max-width: 700px) { .chat-layout { grid-template-columns: 1fr; } }
+  .chat-list { border-right: 1px solid var(--border); background: var(--surface); overflow-y: auto; }
+  .chat-list-header { padding: 20px 16px 12px; font-weight: 700; font-size: 17px; border-bottom: 1px solid var(--border); }
+  .chat-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; border-bottom: 1px solid #f0ece5; transition: background 0.15s; }
+  .chat-item:hover, .chat-item.active { background: var(--primary-light); }
+  .chat-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+  .chat-item-info { flex: 1; min-width: 0; }
+  .chat-item-name { font-weight: 600; font-size: 14px; }
+  .chat-item-preview { font-size: 12px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
+  .chat-window { display: flex; flex-direction: column; background: var(--bg); }
+  .chat-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 20px; display: flex; align-items: center; gap: 12px; }
+  .chat-header-info h3 { font-size: 15px; font-weight: 700; }
+  .chat-header-info p { font-size: 12px; color: var(--text-muted); }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 72%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; }
+  .msg.me { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.them { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .msg-time { font-size: 10px; opacity: 0.6; margin-top: 4px; text-align: right; }
+  .chat-input-area { background: var(--surface); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; gap: 10px; align-items: flex-end; }
+  .chat-input-area textarea { flex: 1; border: 1.5px solid var(--border); border-radius: 20px; padding: 10px 16px; font-size: 14px; font-family: inherit; outline: none; resize: none; max-height: 100px; transition: border 0.2s; }
+  .chat-input-area textarea:focus { border-color: var(--primary); }
+  .send-btn { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.15s; }
+  .send-btn:hover { transform: scale(1.06); }
+  .attach-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--border); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.15s, color 0.15s; }
+  .attach-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .no-chat { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; color: var(--text-muted); }
+  .no-chat svg { opacity: 0.3; }
+
+  /* CHAT: images & message delete */
+  .msg { position: relative; }
+  .msg-img { max-width: 220px; max-height: 220px; border-radius: 10px; display: block; cursor: pointer; margin-top: 2px; }
+  .msg-del {
+    position: absolute; top: -8px; right: -8px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #e53e3e; color: #fff; border: 2px solid var(--bg);
+    font-size: 11px; line-height: 1; cursor: pointer;
+    display: none; align-items: center; justify-content: center;
+    transition: transform 0.15s;
+  }
+  .msg:hover .msg-del { display: flex; }
+  .msg-del:hover { transform: scale(1.1); }
+  .msg.them .msg-del { left: -8px; right: auto; }
+
+  /* NOTIFICATIONS BANNER */
+  .notif-banner {
+    display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: 50px;
+    box-shadow: 0 10px 32px rgba(76,33,184,0.18); padding: 12px 14px 12px 20px;
+    align-items: center; gap: 16px; z-index: 400; font-size: 14px; font-weight: 600;
+    animation: fadeInUp 0.4s ease; max-width: 92vw;
+  }
+  .notif-dismiss { width: 30px; height: 30px; border-radius: 50%; background: var(--bg); border: none; cursor: pointer; color: var(--text-muted); font-size: 14px; }
+  .notif-dismiss:hover { color: var(--text); }
+  @media(max-width:640px){ .notif-banner{ flex-direction:column; align-items:flex-start; gap:10px; padding:14px 16px; border-radius:16px; } }
+
+  /* CREATE LISTING */
+  .create-page { max-width: 700px; margin: 0 auto; padding: 32px 24px; }
+  .create-page h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+  .create-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 32px; text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 16px;
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--primary); background: var(--primary-light); }
+  .upload-zone svg { margin: 0 auto 12px; display: block; color: var(--primary); }
+  .upload-zone p { font-size: 14px; color: var(--text-muted); }
+  .upload-zone strong { color: var(--primary); }
+  .photos-preview { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .preview-img { width: 90px; height: 90px; border-radius: var(--radius-sm); object-fit: cover; position: relative; }
+  .preview-img img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm); }
+  .preview-rm { position: absolute; top: -6px; right: -6px; background: #e53e3e; color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: #1a1a1a; color: #fff; padding: 13px 24px;
+    border-radius: 50px; font-size: 14px; font-weight: 500;
+    z-index: 999; transition: transform 0.3s; white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--primary); }
+  .toast.error { background: #e53e3e; }
+
+  /* LOADING */
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 2.5px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-overlay { position: fixed; inset: 0; background: rgba(247,245,240,0.85); z-index: 300; display: flex; align-items: center; justify-content: center; }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty-state svg { margin: 0 auto 16px; display: block; opacity: 0.3; }
+  .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+
+  /* PROFILE MENU */
+  .profile-menu {
+    position: absolute; top: 56px; right: 0;
+    background: var(--surface); border-radius: var(--radius);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border: 1px solid var(--border);
+    min-width: 180px; z-index: 150;
+    overflow: hidden; display: none;
+  }
+  .profile-menu.open { display: block; }
+  .profile-menu-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer; font-size: 14px; font-weight: 500; transition: background 0.15s; }
+  .profile-menu-item:hover { background: var(--bg); }
+  .profile-menu-item.danger { color: #e53e3e; }
+  .nav-avatar-wrap { position: relative; }
+
+  /* КАТЕГОРИИ */
+  .categories { display: flex; gap: 10px; overflow-x: auto; padding: 20px 24px 0; max-width: 1200px; margin: 0 auto; }
+  .cat-chip { display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 50px; background: var(--surface); border: 1.5px solid var(--border); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.15s; flex-shrink: 0; }
+  .cat-chip:hover, .cat-chip.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+  .cat-pick-chip {
+    padding: 9px 16px; border-radius: 50px;
+    border: 2px solid var(--border); background: var(--surface);
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: all 0.15s; user-select: none;
+  }
+  .cat-pick-chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .cat-pick-chip.selected { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+  .type-tabs { display: flex; gap: 10px; padding: 20px 24px 0; flex-wrap: wrap; }
+  .type-tab {
+    padding: 10px 20px; border-radius: 50px;
+    background: var(--surface); border: 1.5px solid var(--border);
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s; user-select: none;
+  }
+  .type-tab:hover { border-color: var(--primary); }
+  .type-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+  .product-card.inactive { opacity: 0.6; }
+  .product-card.inactive .card-price { text-decoration: line-through; color: var(--text-muted); }
+  .price-strike { text-decoration: line-through; opacity: 0.6; }
+  .stock-badge-off { background: #fee2e2 !important; color: #dc2626 !important; }
+
+  /* MOBILE */
+  @media(max-width: 640px) {
+    .nav-inner { gap: 10px; padding: 0; height: 56px; }
+    .logo { font-size: 18px; }
+    .search-wrap { max-width: none; }
+    .search-wrap input { padding: 8px 14px 8px 36px; font-size: 13px; }
+    .btn { padding: 8px 14px; font-size: 13px; }
+    .hero { padding: 28px 16px; }
+    .hero h1 { font-size: 26px; }
+    .hero p { font-size: 14px; margin-bottom: 18px; }
+    .hero-search input, .hero-search button { padding: 11px 16px; font-size: 14px; }
+    .type-tabs { padding: 16px 16px 0; }
+    .categories { padding: 12px 16px 0; }
+    .feed-section { padding: 20px 16px; }
+    .products-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+    .card-img { height: 130px; }
+    .card-body { padding: 10px; }
+    .card-title { font-size: 13px; }
+    .card-price { font-size: 15px; }
+    .product-page { padding: 16px; }
+    .product-main-img { height: 260px; }
+    .product-info { padding: 18px; }
+    .product-name { font-size: 19px; }
+    .product-price { font-size: 24px; }
+    .create-page { padding: 16px; }
+    .create-page h1 { font-size: 21px; }
+    .modal { padding: 22px; width: 94%; }
+    .chat-messages { padding: 14px; }
+    .msg { max-width: 85%; }
+    nav { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="#" onclick="showPage('home')">
+      <span class="logo-mark"><img src="image.png" alt="АРШАН"></span>
+      <span>
+        АРШ<span>АН</span>
+        <span class="logo-tagline">Аренда · Реализация · Шопинг</span>
+      </span>
+    </a>
+    <div class="search-wrap" id="navSearchWrap" style="display:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="Поиск товаров..." id="navSearch" oninput="handleSearch(this.value)">
+    </div>
+    <div class="nav-actions">
+      <div id="navGuest">
+        <button class="btn btn-ghost" onclick="openAuth('login')">Войти</button>
+        <button class="btn btn-primary" onclick="openAuth('register')">Регистрация</button>
+      </div>
+      <div id="navUser" style="display:none;display:flex;gap:10px;align-items:center">
+        <button class="nav-icon-btn" onclick="showPage('chats')" id="chatNavBtn" title="Чаты">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span class="badge" id="chatBadge" style="display:none">!</span>
+        </button>
+        <div class="nav-avatar-wrap">
+          <button class="avatar-btn" id="avatarBtn" onclick="toggleProfileMenu()"></button>
+          <div class="profile-menu" id="profileMenu">
+            <div style="padding:10px 16px 8px;border-bottom:1px solid var(--border)">
+              <div style="font-size:13px;font-weight:700" id="menuUsername"></div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;word-break:break-all" id="menuUid"></div>
+            </div>
+            <div class="profile-menu-item" id="adminMenuItem" style="display:none" onclick="openNewListing();closeProfileMenu()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Добавить товар
+            </div>
+            <div class="profile-menu-item danger" onclick="logout()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Выйти
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-badges">
+        <span class="hero-badge">🏠 Аренда</span>
+        <span class="hero-badge">📦 Реализация</span>
+        <span class="hero-badge">🛍 Шопинг</span>
+        <span class="hero-badge">🔥 Акции</span>
+        <span class="hero-badge">✨ Новинки</span>
+      </div>
+      <h1>АРШАН —<br>всё для жизни в одном месте</h1>
+      <p>Товары, услуги, аренда и лучшие акции. Просто, быстро, надёжно.</p>
+      <div class="hero-search">
+        <input type="text" placeholder="Что ищете?" id="heroSearch">
+        <button onclick="handleSearch(document.getElementById('heroSearch').value)">Найти</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1200px;margin:0 auto">
+    <div class="type-tabs" id="typeTabs">
+      <div class="type-tab active" onclick="filterType('', this)">🛍 Всё</div>
+      <div class="type-tab" onclick="filterType('item', this)">📦 Товары</div>
+      <div class="type-tab" onclick="filterType('service', this)">🛠 Услуги</div>
+    </div>
+    <div class="categories" id="categoriesRow"></div>
+  </div>
+
+  <div class="feed-section">
+    <div class="section-title">Все объявления</div>
+    <div class="products-grid" id="productGrid">
+      <div class="empty-state" style="grid-column:1/-1">
+        <div style="font-size:40px;margin-bottom:12px">📦</div>
+        <h3>Загружаем товары...</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCT PAGE -->
+<div class="page" id="page-product">
+  <div class="product-page">
+    <button class="back-btn" onclick="showPage('home')">
+      ← Назад к объявлениям
+    </button>
+    <div class="product-layout">
+      <div>
+        <div class="product-gallery">
+          <div class="product-main-img" id="productMainImg"><span>📦</span></div>
+          <div class="product-thumbs" id="productThumbs"></div>
+        </div>
+      </div>
+      <div>
+        <div class="product-info">
+          <div class="product-badge" id="productBadge">✅ В наличии</div>
+          <div class="product-name" id="productName">—</div>
+          <div class="product-price" id="productPrice">—</div>
+          <div class="product-desc" id="productDesc">—</div>
+          <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px" id="productCat"></div>
+          <button class="btn btn-accent" style="width:100%;padding:15px;font-size:16px" id="buyBtn" onclick="openChat()">
+            💬 Написать продавцу
+          </button>
+          <div id="productContactBox"></div>
+          <button class="btn btn-ghost share-btn" style="width:100%;padding:12px;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px" onclick="shareProduct()">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Поделиться
+          </button>
+          <div id="adminProductControls" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-ghost" style="width:100%;padding:12px" onclick="startEditListing()">✏️ Редактировать</button>
+            <button class="btn btn-ghost" style="width:100%;padding:12px" id="toggleActiveBtn" onclick="toggleActiveListing()">🚫 Снять с продажи</button>
+            <button class="btn" style="width:100%;padding:12px;background:#fee2e2;color:#dc2626" onclick="deleteListing()">🗑 Удалить навсегда</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHATS PAGE -->
+<div class="page" id="page-chats">
+  <div class="chat-layout">
+    <div class="chat-list">
+      <div class="chat-list-header" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Чаты</span>
+        <button onclick="showPage('home')" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--text-muted);font-family:inherit;font-weight:500">← Главная</button>
+      </div>
+      <div id="chatListItems"></div>
+    </div>
+    <div class="chat-window" id="chatWindow">
+      <div class="no-chat">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Выберите чат</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE PAGE -->
+<div class="page" id="page-create">
+  <div class="create-page">
+    <button class="back-btn" onclick="showPage('home')">← Назад</button>
+    <h1 id="createPageTitle">Новое объявление</h1>
+    <p class="create-sub">Заполните информацию</p>
+
+    <div class="form-group">
+      <label>Тип объявления *</label>
+      <div class="tabs" style="margin-bottom:0">
+        <button type="button" class="tab active" id="typeTabItem" onclick="setListingType('item')">📦 Товар</button>
+        <button type="button" class="tab" id="typeTabService" onclick="setListingType('service')">🛠 Услуга</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label id="photosLabel">Фотографии товара</label>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('photoInput').click()">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <p><strong>Нажмите</strong> или перетащите фото сюда</p>
+        <p style="margin-top:4px;font-size:12px">До 10 фото, JPG/PNG/WebP</p>
+      </div>
+      <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotos(this.files)">
+      <div class="photos-preview" id="photosPreview"></div>
+    </div>
+
+    <div class="form-group">
+      <label id="titleLabel">Название товара *</label>
+      <input type="text" id="newTitle" placeholder="Например: Куртка зимняя Nike M">
+    </div>
+    <div class="form-group">
+      <label id="priceLabel">Цена (₽) *</label>
+      <input type="number" id="newPrice" placeholder="0">
+      <div id="freeNote" style="display:none;margin-top:8px;font-size:13px;color:var(--primary-dark);background:var(--primary-light);padding:8px 12px;border-radius:var(--radius-sm)">🎁 Выбрана категория «Отдам даром» — цена автоматически установлена как «Бесплатно»</div>
+    </div>
+    <div class="form-group">
+      <label>Категория *</label>
+      <input type="hidden" id="newCategory">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px" id="catPicker"></div>
+    </div>
+    <div class="form-group">
+      <label id="descLabel">Описание *</label>
+      <textarea id="newDesc" placeholder="Расскажите о состоянии товара, размере, особенностях..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Контакты для связи (необязательно)</label>
+      <div class="contact-fields-box">
+        <div class="fields-hint">📞 Эти данные увидят покупатели прямо в карточке. Можно оставить пустыми или удалить в любой момент.</div>
+        <div style="margin-bottom:12px">
+          <input type="tel" id="newPhone" placeholder="Телефон, напр. +7 999 123-45-67">
+        </div>
+        <div style="margin-bottom:12px">
+          <input type="text" id="newAddress" placeholder="Адрес, напр. г. Москва, ул. Ленина, 10">
+        </div>
+        <div style="margin-bottom:12px">
+          <input type="email" id="newEmail" placeholder="Email, напр. shop@arshan.ru">
+        </div>
+        <div style="margin-bottom:12px">
+          <input type="text" id="newTelegram" placeholder="Telegram @username, напр. @arshan_shop">
+        </div>
+        <div>
+          <input type="text" id="newMax" placeholder="Max (ВКонтакте) @username, напр. @arshan">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;padding:15px;font-size:16px" id="publishBtn" onclick="publishListing()">
+      Опубликовать объявление
+    </button>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox-overlay" id="lightboxOverlay" onclick="closeLightboxOnBg(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <div class="lightbox-img-wrap" id="lightboxImgWrap">
+    <img id="lightboxImg" src="" alt="">
+  </div>
+  <span class="lightbox-hint">Колесо мыши или кнопки для масштаба · Перетащите для перемещения</span>
+  <div class="lightbox-zoom-btns">
+    <button class="lz-btn" onclick="lbZoom(-0.25)" title="Уменьшить">−</button>
+    <button class="lz-btn" onclick="lbZoomReset()" title="Сбросить">⊙</button>
+    <button class="lz-btn" onclick="lbZoom(+0.25)" title="Увеличить">+</button>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="overlay" id="authOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAuth()">✕</button>
+    <div style="width:56px;height:56px;border-radius:14px;overflow:hidden;margin-bottom:14px;box-shadow:0 4px 14px rgba(108,60,233,0.25)">
+      <img src="image.png" alt="АРШАН" style="width:100%;height:100%;object-fit:cover">
+    </div>
+    <h2 id="authTitle">Вход</h2>
+    <p class="modal-sub" id="authSub">Войдите в свой аккаунт АРШАН</p>
+    <div class="tabs">
+      <button class="tab active" id="tab-login" onclick="switchTab('login')">Вход</button>
+      <button class="tab" id="tab-register" onclick="switchTab('register')">Регистрация</button>
+    </div>
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Имя пользователя</label>
+        <input type="text" id="loginUsername" placeholder="ваш_ник">
+      </div>
+      <div class="form-group">
+        <label>Пароль</label>
+        <input type="password" id="loginPassword" placeholder="••••••••">
+      </div>
+      <div class="form-error" id="loginError"></div>
+      <button class="btn btn-primary" style="width:100%;padding:13px;font-size:15px;margin-top:8px" onclick="doLogin()">Войти</button>
+    </div>
+    <div id="registerForm" style="display:none">
+      <div class="form-group">
+        <label>Имя пользователя</label>
+        <input type="text" id="regUsername" placeholder="придумайте ник">
+      </div>
+      <div class="form-group">
+        <label>Пароль</label>
+        <input type="password" id="regPassword" placeholder="минимум 6 символов">
+      </div>
+      <div class="form-error" id="regError"></div>
+      <button class="btn btn-primary" style="width:100%;padding:13px;font-size:15px;margin-top:8px" onclick="doRegister()">Создать аккаунт</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS BANNER -->
+<div class="notif-banner" id="notifBanner">
+  <span>🔔 Включить уведомления о новых сообщениях?</span>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-primary" style="padding:8px 16px;font-size:13px" onclick="enableNotifications()">Включить</button>
+    <button class="notif-dismiss" onclick="dismissNotifBanner()">✕</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB8ZpshAiMxlqlqlfBivwxZnpfyXGjVioI",
+  authDomain: "second-life-aea9c.firebaseapp.com",
+  databaseURL: "https://second-life-aea9c-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "second-life-aea9c",
+  storageBucket: "second-life-aea9c.firebasestorage.app",
+  messagingSenderId: "822058522963",
+  appId: "1:822058522963:web:ea6098ee91350c67a7a9a6"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+window.db = db;
+window.auth = auth;
+window.dbRef = ref;
+window.dbSet = set;
+window.dbGet = get;
+window.dbPush = push;
+window.dbOnValue = onValue;
+window.fbCreateUser = createUserWithEmailAndPassword;
+window.fbSignIn = signInWithEmailAndPassword;
+window.fbSignOut = signOut;
+
+window.firebaseReady = true;
+window.dispatchEvent(new Event('firebaseReady'));
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    const snap = await get(ref(db, 'users/' + user.uid));
+    const username = snap.exists() ? snap.val().username : '';
+    window.dispatchEvent(new CustomEvent('authStateChanged', { detail: { uid: user.uid, username } }));
+  } else {
+    window.dispatchEvent(new CustomEvent('authStateChanged', { detail: null }));
+  }
+});
+</script>
+
+<script>
+// ===== STATE =====
+let currentUser = null;
+let adminId = null;
+let allProducts = [];
+let uploadedPhotos = []; // base64 -> imgbb urls
+let currentChatId = null;
+let currentProductForChat = null;
+let chatListeners = {};
+const IMGBB_KEY = '2dc4c1efe6ab524288eb7f5e173c4810';
+
+// ===== INIT =====
+window.addEventListener('firebaseReady', () => {
+  loadProducts();
+  renderCategoriesRow();
+  checkSharedProductLink();
+});
+
+window.addEventListener('authStateChanged', async (e) => {
+  const user = e.detail;
+  if (user) {
+    currentUser = user;
+    await loadAdminId();
+    startNotificationWatcher();
+    maybeShowNotifBanner();
+  } else {
+    currentUser = null;
+    adminId = null;
+    stopNotificationWatcher();
+    dismissNotifBanner();
+  }
+  updateNavUser();
+});
+
+async function loadAdminId() {
+  try {
+    const snap = await window.dbGet(window.dbRef(window.db, 'admin'));
+    if (snap.exists()) { adminId = snap.val().trim(); updateNavUser(); }
+  } catch(e) {}
+}
+
+// Конвертирует любой ник (даже кириллицу/эмодзи) в валидный email для Firebase Auth
+function usernameToEmail(username) {
+  let code = '';
+  for (const ch of username.toLowerCase()) {
+    code += ch.codePointAt(0).toString(36);
+  }
+  return 'u' + code + '@secondlife.app';
+}
+
+// ===== PAGES =====
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('navSearchWrap').style.display = name === 'home' ? 'flex' : 'none';
+  closeProfileMenu();
+  if (name === 'chats') loadChatList();
+}
+window.showPage = showPage;
+
+// ===== AUTH =====
+function openAuth(tab) {
+  document.getElementById('authOverlay').classList.add('open');
+  switchTab(tab);
+}
+window.openAuth = openAuth;
+
+function closeAuth() {
+  document.getElementById('authOverlay').classList.remove('open');
+}
+window.closeAuth = closeAuth;
+
+function switchTab(tab) {
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  document.getElementById('authTitle').textContent = tab === 'login' ? 'Вход' : 'Регистрация';
+}
+window.switchTab = switchTab;
+
+async function doRegister() {
+  const username = document.getElementById('regUsername').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const err = document.getElementById('regError');
+  err.classList.remove('show');
+
+  if (!username || username.length < 3) return showErr(err, 'Ник минимум 3 символа');
+  if (!password || password.length < 6) return showErr(err, 'Пароль минимум 6 символов');
+  if (!/^[a-zA-Z0-9_а-яА-Я]+$/.test(username)) return showErr(err, 'Ник содержит недопустимые символы');
+
+  try {
+    // Проверяем уникальность ника
+    const snap = await window.dbGet(window.dbRef(window.db, 'users'));
+    if (snap.exists()) {
+      for (const uid in snap.val()) {
+        if (snap.val()[uid].username?.toLowerCase() === username.toLowerCase()) {
+          return showErr(err, 'Этот ник уже занят');
+        }
+      }
+    }
+    // Email из ника (Firebase Auth требует email)
+    const fakeEmail = usernameToEmail(username);
+    const cred = await window.fbCreateUser(window.auth, fakeEmail, password);
+    const uid = cred.user.uid;
+    // Сохраняем username в базу
+    await window.dbSet(window.dbRef(window.db, 'users/' + uid), {
+      username, createdAt: Date.now()
+    });
+    closeAuth();
+    toast('Добро пожаловать, ' + username + '! 🎉', 'success');
+  } catch(e) {
+    if (e.code === 'auth/email-already-in-use') return showErr(err, 'Этот ник уже занят');
+    showErr(err, 'Ошибка: ' + (e.message || e.code));
+  }
+}
+window.doRegister = doRegister;
+
+async function doLogin() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const err = document.getElementById('loginError');
+  err.classList.remove('show');
+
+  if (!username || !password) return showErr(err, 'Заполните все поля');
+
+  try {
+    // Ищем uid по нику
+    const snap = await window.dbGet(window.dbRef(window.db, 'users'));
+    if (!snap.exists()) return showErr(err, 'Пользователь не найден');
+    let foundEmail = null;
+    for (const uid in snap.val()) {
+      if (snap.val()[uid].username?.toLowerCase() === username.toLowerCase()) {
+        foundEmail = usernameToEmail(username);
+        break;
+      }
+    }
+    if (!foundEmail) return showErr(err, 'Пользователь не найден');
+    await window.fbSignIn(window.auth, foundEmail, password);
+    closeAuth();
+    toast('С возвращением, ' + username + '!', 'success');
+  } catch(e) {
+    if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') return showErr(err, 'Неверный пароль');
+    if (e.code === 'auth/user-not-found') return showErr(err, 'Пользователь не найден');
+    showErr(err, 'Ошибка: ' + (e.message || e.code));
+  }
+}
+window.doLogin = doLogin;
+
+async function logout() {
+  await window.fbSignOut(window.auth);
+  currentUser = null;
+  adminId = null;
+  updateNavUser();
+  showPage('home');
+  closeProfileMenu();
+  toast('Вы вышли из аккаунта');
+}
+window.logout = logout;
+
+function updateNavUser() {
+  const isAdmin = currentUser && adminId && currentUser.uid === adminId;
+  document.getElementById('navGuest').style.display = currentUser ? 'none' : 'flex';
+  document.getElementById('navUser').style.display = currentUser ? 'flex' : 'none';
+  if (currentUser) {
+    document.getElementById('avatarBtn').textContent = currentUser.username[0].toUpperCase();
+    document.getElementById('adminMenuItem').style.display = isAdmin ? 'flex' : 'none';
+    const mu = document.getElementById('menuUsername');
+    const mi = document.getElementById('menuUid');
+    if (mu) mu.textContent = currentUser.username;
+    if (mi) mi.textContent = 'ID: ' + currentUser.uid;
+  }
+}
+
+// ===== PROFILE MENU =====
+function toggleProfileMenu() {
+  document.getElementById('profileMenu').classList.toggle('open');
+}
+function closeProfileMenu() {
+  document.getElementById('profileMenu').classList.remove('open');
+}
+window.toggleProfileMenu = toggleProfileMenu;
+document.addEventListener('click', e => {
+  if (!e.target.closest('.nav-avatar-wrap')) closeProfileMenu();
+});
+
+// ===== PRODUCTS =====
+async function loadProducts() {
+  try {
+    window.dbOnValue(window.dbRef(window.db, 'products'), snap => {
+      allProducts = [];
+      if (snap.exists()) {
+        const data = snap.val();
+        for (const id in data) {
+          allProducts.push({ id, ...data[id] });
+        }
+        allProducts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      }
+      renderProducts(allProducts);
+    });
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+const ITEM_CATS = [
+  ['Одежда','👗'], ['Электроника','📱'], ['Мебель','🛋'], ['Обувь','👟'],
+  ['Детское','🧸'], ['Школьное','🎒'], ['Книги','📚'], ['Спорт','⚽'], ['Красота','💄'],
+  ['Дом и сад','🏡'], ['Отдам даром','🎁'], ['Другое','📦']
+];
+const SERVICE_CATS = [
+  ['Аренда жилья','🏠'], ['Отдам даром','🎁'], ['Другое','✨']
+];
+const FREE_CATEGORY = 'Отдам даром';
+
+let activeCategory = '';
+let activeType = '';
+
+function filterType(type, el) {
+  activeType = type;
+  activeCategory = '';
+  document.querySelectorAll('.type-tab').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderCategoriesRow();
+  applyFilters();
+}
+window.filterType = filterType;
+
+function renderCategoriesRow() {
+  const row = document.getElementById('categoriesRow');
+  let cats;
+  if (activeType === 'service') cats = SERVICE_CATS;
+  else if (activeType === 'item') cats = ITEM_CATS;
+  else {
+    const seen = new Set();
+    cats = [...ITEM_CATS, ...SERVICE_CATS].filter(([name]) => {
+      if (seen.has(name)) return false;
+      seen.add(name); return true;
+    });
+  }
+  row.innerHTML = `<div class="cat-chip active" onclick="filterCat('', this)">🛍 Все категории</div>` +
+    cats.map(([name, emoji]) => `<div class="cat-chip" onclick="filterCat('${name}', this)">${emoji} ${name}</div>`).join('');
+}
+
+function filterCat(cat, el) {
+  activeCategory = cat;
+  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+window.filterCat = filterCat;
+
+function applyFilters(q) {
+  q = (q !== undefined ? q : (document.getElementById('navSearch')?.value || '')).toLowerCase().trim();
+  const filtered = allProducts.filter(p =>
+    (!activeType || (p.type || 'item') === activeType) &&
+    (!activeCategory || p.category === activeCategory) &&
+    (!q || p.title.toLowerCase().includes(q) || (p.desc || '').toLowerCase().includes(q))
+  );
+  renderProducts(filtered);
+}
+
+function handleSearch(q) {
+  applyFilters(q);
+}
+window.handleSearch = handleSearch;
+
+function renderProducts(products) {
+  const grid = document.getElementById('productGrid');
+  if (!products || products.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div style="font-size:40px;margin-bottom:12px">🔍</div>
+      <h3>Объявлений пока нет</h3>
+      <p style="margin-top:6px;font-size:14px">Загляните позже</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = products.map(p => {
+    const img = (p.photos && p.photos[0]) ? `<img src="${p.photos[0]}" alt="${p.title}" loading="lazy">` : `<span>${p.type==='service'?'🛠':'📦'}</span>`;
+    const inactive = p.active === false;
+    const isFree = p.category === FREE_CATEGORY || p.price === 0;
+    const priceDisp = isFree ? '🎁 Бесплатно' : formatPrice(p.price);
+    const priceHtml = inactive ? `<span class="price-strike">${priceDisp}</span>` : priceDisp;
+    const metaExtra = inactive ? ' · <span style="color:#dc2626">нет в наличии</span>' : '';
+    return `<div class="product-card ${inactive?'inactive':''}" onclick="openProduct('${p.id}')">
+      <div class="card-img">${img}</div>
+      <div class="card-body">
+        <div class="card-title">${escHtml(p.title)}</div>
+        <div class="card-price">${priceHtml}</div>
+        <div class="card-meta">${escHtml(p.category || '')} · ${timeAgo(p.createdAt)}${metaExtra}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openProduct(id) {
+  const p = allProducts.find(x => x.id === id);
+  if (!p) return;
+  currentProductForChat = p;
+
+  document.getElementById('productName').textContent = p.title;
+  const inactive = p.active === false;
+  const isFree = p.category === FREE_CATEGORY || p.price === 0;
+  const priceDisp = isFree ? '🎁 Бесплатно' : formatPrice(p.price);
+  document.getElementById('productPrice').innerHTML = inactive ? `<span class="price-strike">${priceDisp}</span>` : priceDisp;
+  document.getElementById('productDesc').textContent = p.desc || '';
+  document.getElementById('productCat').textContent = p.category ? '📂 ' + p.category : '';
+
+  const badge = document.getElementById('productBadge');
+  if (inactive) {
+    badge.textContent = '❌ Нет в наличии';
+    badge.className = 'product-badge stock-badge-off';
+  } else {
+    badge.textContent = p.type === 'service' ? '🛠 Услуга доступна' : '✅ В наличии';
+    badge.className = 'product-badge';
+  }
+
+  const buyBtn = document.getElementById('buyBtn');
+  const isAdmin = currentUser && adminId && currentUser.uid === adminId;
+  if (inactive && !isAdmin) {
+    buyBtn.style.display = 'none';
+  } else {
+    buyBtn.style.display = 'block';
+    buyBtn.textContent = isFree ? '🎁 Забрать бесплатно' : (p.type === 'service' ? '💬 Заказать услугу' : '💬 Написать продавцу');
+  }
+
+  // Contact info block
+  const contactBox = document.getElementById('productContactBox');
+  const hasContact = p.contactPhone || p.contactAddress || p.contactEmail || p.contactTelegram || p.contactMax;
+  if (hasContact) {
+    const tgUsername = p.contactTelegram ? p.contactTelegram.replace('@','') : '';
+    const maxUsername = p.contactMax ? p.contactMax.replace('@','') : '';
+    contactBox.innerHTML = `<div class="contact-box">
+      <div class="contact-box-title">📇 Контакты для связи</div>
+      ${p.contactPhone ? `<div class="contact-row">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <a href="tel:${escHtml(p.contactPhone)}">${escHtml(p.contactPhone)}</a>
+      </div>` : ''}
+      ${p.contactAddress ? `<div class="contact-row">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span>${escHtml(p.contactAddress)}</span>
+      </div>` : ''}
+      ${p.contactEmail ? `<div class="contact-row">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <a href="mailto:${escHtml(p.contactEmail)}">${escHtml(p.contactEmail)}</a>
+      </div>` : ''}
+      ${tgUsername ? `<a class="contact-btn contact-btn-tg" href="https://t.me/${tgUsername}" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        Написать в Telegram
+      </a>` : ''}
+      ${maxUsername ? `<a class="contact-btn contact-btn-max" href="https://max.ru/${maxUsername}" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Написать в Макс
+      </a>` : ''}
+    </div>`;
+  } else {
+    contactBox.innerHTML = '';
+  }
+
+  document.getElementById('adminProductControls').style.display = isAdmin ? 'flex' : 'none';
+  const toggleBtn = document.getElementById('toggleActiveBtn');
+  if (toggleBtn) toggleBtn.textContent = inactive ? '✅ Вернуть в продажу' : '🚫 Снять с продажи';
+
+  // Gallery
+  const mainImg = document.getElementById('productMainImg');
+  const thumbs = document.getElementById('productThumbs');
+  if (p.photos && p.photos.length > 0) {
+    mainImg.innerHTML = `<img src="${p.photos[0]}" alt="${p.title}" onclick="openLightbox('${p.photos[0]}')" style="cursor:zoom-in">`;
+    thumbs.innerHTML = p.photos.map((src, i) =>
+      `<div class="thumb ${i===0?'active':''}" onclick="setMainImg('${src}', this)"><img src="${src}" alt=""></div>`
+    ).join('');
+  } else {
+    mainImg.innerHTML = `<span>📦</span>`;
+    thumbs.innerHTML = '';
+  }
+
+  showPage('product');
+}
+window.openProduct = openProduct;
+
+function setMainImg(src, el) {
+  document.getElementById('productMainImg').innerHTML = `<img src="${src}" alt="" onclick="openLightbox('${src}')" style="cursor:zoom-in">`;
+  document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+window.setMainImg = setMainImg;
+
+function openNewListing() {
+  editingProductId = null;
+  uploadedPhotos = [];
+  document.getElementById('photosPreview').innerHTML = '';
+  document.getElementById('newTitle').value = '';
+  document.getElementById('newPrice').value = '';
+  document.getElementById('newCategory').value = '';
+  document.getElementById('newDesc').value = '';
+  document.getElementById('newPhone').value = '';
+  document.getElementById('newAddress').value = '';
+  document.getElementById('newEmail').value = '';
+  document.getElementById('newTelegram').value = '';
+  document.getElementById('newMax').value = '';
+  applyFreeCategoryLogic('');
+  document.getElementById('createPageTitle').textContent = 'Новое объявление';
+  document.getElementById('publishBtn').textContent = 'Опубликовать объявление';
+  setListingType('item');
+  showPage('create');
+}
+window.openNewListing = openNewListing;
+
+// ===== ADMIN: EDIT / TOGGLE / DELETE =====
+let editingProductId = null;
+
+function startEditListing() {
+  const p = currentProductForChat;
+  if (!p) return;
+  editingProductId = p.id;
+  setListingType(p.type || 'item');
+  document.getElementById('newTitle').value = p.title || '';
+  document.getElementById('newPrice').value = p.price || '';
+  document.getElementById('newDesc').value = p.desc || '';
+  document.getElementById('newCategory').value = p.category || '';
+  document.getElementById('newPhone').value = p.contactPhone || '';
+  document.getElementById('newAddress').value = p.contactAddress || '';
+  document.getElementById('newEmail').value = p.contactEmail || '';
+  document.getElementById('newTelegram').value = p.contactTelegram || '';
+  document.getElementById('newMax').value = p.contactMax || '';
+  setTimeout(() => {
+    document.querySelectorAll('.cat-pick-chip').forEach(c => {
+      if (c.textContent.trim().endsWith(p.category)) c.classList.add('selected');
+      else c.classList.remove('selected');
+    });
+    applyFreeCategoryLogic(p.category || '');
+  }, 0);
+  uploadedPhotos = (p.photos || []).map(url => ({ dataUrl: url, uploaded: true, url }));
+  renderPhotoPreview();
+  document.getElementById('createPageTitle').textContent = 'Редактировать объявление';
+  document.getElementById('publishBtn').textContent = 'Сохранить изменения';
+  showPage('create');
+}
+window.startEditListing = startEditListing;
+
+async function toggleActiveListing() {
+  const p = currentProductForChat;
+  if (!p) return;
+  const newActive = p.active === false ? true : false;
+  try {
+    await window.dbSet(window.dbRef(window.db, `products/${p.id}/active`), newActive);
+    toast(newActive ? 'Объявление снова в продаже' : 'Объявление снято с продажи', 'success');
+    p.active = newActive;
+    openProduct(p.id);
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+}
+window.toggleActiveListing = toggleActiveListing;
+
+async function deleteListing() {
+  const p = currentProductForChat;
+  if (!p) return;
+  if (!confirm('Удалить объявление навсегда? Это действие нельзя отменить.')) return;
+  try {
+    await window.dbSet(window.dbRef(window.db, `products/${p.id}`), null);
+    toast('Объявление удалено', 'success');
+    showPage('home');
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+}
+window.deleteListing = deleteListing;
+
+// ===== CREATE LISTING =====
+let listingType = 'item';
+
+function setListingType(type) {
+  listingType = type;
+  document.getElementById('typeTabItem').classList.toggle('active', type === 'item');
+  document.getElementById('typeTabService').classList.toggle('active', type === 'service');
+  document.getElementById('photosLabel').textContent = type === 'service' ? 'Фотографии (по желанию)' : 'Фотографии товара';
+  document.getElementById('titleLabel').textContent = type === 'service' ? 'Название услуги *' : 'Название товара *';
+  document.getElementById('priceLabel').textContent = type === 'service' ? 'Цена (₽) *' : 'Цена (₽) *';
+  document.getElementById('descLabel').textContent = type === 'service' ? 'Описание услуги *' : 'Описание *';
+  renderCatPicker();
+}
+window.setListingType = setListingType;
+
+function renderCatPicker() {
+  const picker = document.getElementById('catPicker');
+  const cats = listingType === 'service' ? SERVICE_CATS : ITEM_CATS;
+  const currentVal = document.getElementById('newCategory').value;
+  picker.innerHTML = cats.map(([name, emoji]) =>
+    `<div class="cat-pick-chip ${currentVal===name?'selected':''}" onclick="pickCat(this,'${name}')">${emoji} ${name}</div>`
+  ).join('');
+}
+
+uploadedPhotos = [];
+
+function handlePhotos(files) {
+  if (uploadedPhotos.length + files.length > 10) {
+    toast('Максимум 10 фото', 'error'); return;
+  }
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      uploadedPhotos.push({ file, dataUrl: e.target.result, uploaded: false, url: null });
+      renderPhotoPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+window.handlePhotos = handlePhotos;
+
+function renderPhotoPreview() {
+  const wrap = document.getElementById('photosPreview');
+  wrap.innerHTML = uploadedPhotos.map((p, i) =>
+    `<div class="preview-img">
+      <img src="${p.dataUrl}" alt="">
+      <button class="preview-rm" onclick="removePhoto(${i})">✕</button>
+    </div>`
+  ).join('');
+}
+
+function removePhoto(i) {
+  uploadedPhotos.splice(i, 1);
+  renderPhotoPreview();
+}
+window.removePhoto = removePhoto;
+
+async function uploadToImgBB(dataUrl) {
+  const base64 = dataUrl.split(',')[1];
+  const fd = new FormData();
+  fd.append('key', IMGBB_KEY);
+  fd.append('image', base64);
+  const r = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
+  const j = await r.json();
+  if (j.success) return j.data.url;
+  throw new Error('ImgBB upload failed');
+}
+
+async function publishListing() {
+  if (!currentUser || !adminId || currentUser.uid !== adminId) {
+    toast('Нет прав', 'error'); return;
+  }
+  const title = document.getElementById('newTitle').value.trim();
+  const price = document.getElementById('newPrice').value.trim();
+  const category = document.getElementById('newCategory').value;
+  const desc = document.getElementById('newDesc').value.trim();
+  const contactPhone = document.getElementById('newPhone').value.trim();
+  const contactAddress = document.getElementById('newAddress').value.trim();
+  const contactEmail = document.getElementById('newEmail').value.trim();
+  let contactTelegram = document.getElementById('newTelegram').value.trim();
+  if (contactTelegram && !contactTelegram.startsWith('@')) contactTelegram = '@' + contactTelegram;
+  let contactMax = document.getElementById('newMax').value.trim();
+  if (contactMax && !contactMax.startsWith('@')) contactMax = '@' + contactMax;
+
+  if (!title || !price || !category || !desc) {
+    toast('Заполните все поля', 'error'); return;
+  }
+
+  const btn = document.getElementById('publishBtn');
+  btn.innerHTML = '<div class="spinner"></div> ' + (editingProductId ? 'Сохраняем...' : 'Публикуем...');
+  btn.disabled = true;
+
+  try {
+    let photoUrls = [];
+    // Уже загруженные фото (при редактировании) просто оставляем, новые - грузим в ImgBB
+    for (const p of uploadedPhotos) {
+      if (p.uploaded && p.url) {
+        photoUrls.push(p.url);
+      } else {
+        const url = await uploadToImgBB(p.dataUrl);
+        photoUrls.push(url);
+      }
+    }
+
+    if (editingProductId) {
+      const payload = {
+        title, price: parseFloat(price), category, desc,
+        photos: photoUrls,
+        type: listingType,
+        sellerId: currentUser.uid,
+        active: (allProducts.find(p => p.id === editingProductId)?.active) !== false,
+        createdAt: allProducts.find(p => p.id === editingProductId)?.createdAt || Date.now()
+      };
+      if (contactPhone) payload.contactPhone = contactPhone;
+      if (contactAddress) payload.contactAddress = contactAddress;
+      if (contactEmail) payload.contactEmail = contactEmail;
+      if (contactTelegram) payload.contactTelegram = contactTelegram;
+      if (contactMax) payload.contactMax = contactMax;
+      // Полная перезапись объекта — если поле контакта пустое, оно просто не попадёт в базу (т.е. будет удалено)
+      await window.dbSet(window.dbRef(window.db, 'products/' + editingProductId), payload);
+      toast('Изменения сохранены! ✅', 'success');
+    } else {
+      const newRef = window.dbPush(window.dbRef(window.db, 'products'));
+      const payload = {
+        title, price: parseFloat(price), category, desc,
+        photos: photoUrls,
+        type: listingType,
+        active: true,
+        sellerId: currentUser.uid,
+        createdAt: Date.now()
+      };
+      if (contactPhone) payload.contactPhone = contactPhone;
+      if (contactAddress) payload.contactAddress = contactAddress;
+      if (contactEmail) payload.contactEmail = contactEmail;
+      if (contactTelegram) payload.contactTelegram = contactTelegram;
+      if (contactMax) payload.contactMax = contactMax;
+      await window.dbSet(newRef, payload);
+      toast('Объявление опубликовано! 🎉', 'success');
+    }
+
+    editingProductId = null;
+    uploadedPhotos = [];
+    document.getElementById('photosPreview').innerHTML = '';
+    document.getElementById('newTitle').value = '';
+    document.getElementById('newPrice').value = '';
+    document.getElementById('newCategory').value = '';
+    document.getElementById('newDesc').value = '';
+    document.getElementById('newPhone').value = '';
+    document.getElementById('newAddress').value = '';
+    document.getElementById('newEmail').value = '';
+    document.getElementById('newTelegram').value = '';
+    document.getElementById('newMax').value = '';
+    applyFreeCategoryLogic('');
+    document.getElementById('createPageTitle').textContent = 'Новое объявление';
+    document.getElementById('publishBtn').textContent = 'Опубликовать объявление';
+    setListingType('item');
+    showPage('home');
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+  btn.innerHTML = editingProductId ? 'Сохранить изменения' : 'Опубликовать объявление';
+  btn.disabled = false;
+}
+window.publishListing = publishListing;
+
+// ===== CHAT =====
+async function openChat() {
+  if (!currentUser) { openAuth('login'); return; }
+  if (!adminId) { toast('Продавец недоступен', 'error'); return; }
+  if (currentUser.uid === adminId) { toast('Это ваш магазин', 'error'); return; }
+
+  // Chat id = buyer_uid (chat between buyer and admin, keyed by buyer)
+  const chatId = currentUser.uid;
+  currentChatId = chatId;
+
+  // Отправляем сообщение о товаре/услуге, если ещё не писали именно про него в этом чате
+  if (currentProductForChat) {
+    const p = currentProductForChat;
+    const chatSnap = await window.dbGet(window.dbRef(window.db, `chats/${chatId}/messages`));
+    let lastProductId = null;
+    if (chatSnap.exists()) {
+      const msgsArr = Object.values(chatSnap.val()).sort((a,b) => b.ts - a.ts);
+      lastProductId = msgsArr[0]?.refProductId || null;
+    }
+    if (lastProductId !== p.id) {
+      const isFree = p.category === FREE_CATEGORY || p.price === 0;
+      const isService = p.type === 'service';
+      let intro;
+      if (isFree) {
+        intro = `Здравствуйте! Хочу забрать ${isService ? 'услугу' : 'товар'} «${p.title}» — вижу, что отдаёте даром 🎁`;
+      } else if (isService) {
+        intro = `Здравствуйте! Хочу заказать услугу «${p.title}» за ${formatPrice(p.price)}`;
+      } else {
+        intro = `Здравствуйте! Хочу купить «${p.title}» за ${formatPrice(p.price)}`;
+      }
+      await sendMessage(chatId, intro, 'text', null, p.id);
+    }
+  }
+
+  showPage('chats');
+  setTimeout(() => openChatWindow(chatId), 100);
+}
+window.openChat = openChat;
+
+async function shareProduct() {
+  const p = currentProductForChat;
+  if (!p) return;
+  const url = `${location.origin}${location.pathname}?product=${p.id}`;
+  const isFree = p.category === FREE_CATEGORY || p.price === 0;
+  const priceText = isFree ? 'Бесплатно 🎁' : formatPrice(p.price);
+  const shareText = `${p.title} — ${priceText}\nАРШАН`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: p.title, text: shareText, url });
+    } catch(e) { /* пользователь отменил — ничего не делаем */ }
+  } else {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast('Ссылка скопирована! Отправьте её друзьям 🔗', 'success');
+    } catch(e) {
+      toast('Не удалось скопировать ссылку', 'error');
+    }
+  }
+}
+window.shareProduct = shareProduct;
+
+function checkSharedProductLink() {
+  const params = new URLSearchParams(location.search);
+  const productId = params.get('product');
+  if (productId) {
+    const tryOpen = () => {
+      const p = allProducts.find(x => x.id === productId);
+      if (p) openProduct(productId);
+    };
+    if (allProducts.length) tryOpen();
+    else setTimeout(tryOpen, 800);
+  }
+}
+
+async function loadChatList() {
+  if (!currentUser) return;
+  const listEl = document.getElementById('chatListItems');
+  listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">Загрузка...</div>';
+
+  const isAdmin = adminId && currentUser.uid === adminId;
+  let chatsRef;
+
+  if (isAdmin) {
+    chatsRef = window.dbRef(window.db, 'chats');
+  } else {
+    chatsRef = window.dbRef(window.db, `chats/${currentUser.uid}`);
+  }
+
+  window.dbOnValue(chatsRef, async snap => {
+    if (!snap.exists()) {
+      listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">Нет чатов</div>';
+      return;
+    }
+
+    if (isAdmin) {
+      // Admin sees all chats
+      const chats = snap.val();
+      const items = [];
+      for (const chatId in chats) {
+        const msgs = chats[chatId].messages;
+        const lastMsg = msgs ? Object.values(msgs).sort((a,b) => b.ts - a.ts)[0] : null;
+        // Get buyer username
+        try {
+          const uSnap = await window.dbGet(window.dbRef(window.db, `users/${chatId}`));
+          const uname = uSnap.exists() ? uSnap.val().username : chatId;
+          items.push({ chatId, name: uname, lastMsg });
+        } catch(e) {
+          items.push({ chatId, name: chatId, lastMsg });
+        }
+      }
+      items.sort((a,b) => (b.lastMsg?.ts || 0) - (a.lastMsg?.ts || 0));
+      listEl.innerHTML = items.map(it => chatItemHtml(it)).join('');
+    } else {
+      // Buyer sees only their chat with admin
+      const msgs = snap.val().messages;
+      const lastMsg = msgs ? Object.values(msgs).sort((a,b) => b.ts - a.ts)[0] : null;
+      const adminSnap = await window.dbGet(window.dbRef(window.db, `users/${adminId}`));
+      const adminName = adminSnap.exists() ? adminSnap.val().username : 'АРШАН';
+      listEl.innerHTML = chatItemHtml({ chatId: currentUser.uid, name: 'АРШАН 🛍', lastMsg });
+      openChatWindow(currentUser.uid);
+    }
+  });
+}
+
+function chatItemHtml({ chatId, name, lastMsg }) {
+  let previewText = 'Нет сообщений';
+  if (lastMsg) previewText = lastMsg.type === 'image' ? '📷 Фото' : escHtml((lastMsg.text || '').substring(0,40));
+  return `<div class="chat-item" onclick="openChatWindow('${chatId}')" id="ci_${chatId}">
+    <div class="chat-avatar">${name[0].toUpperCase()}</div>
+    <div class="chat-item-info">
+      <div class="chat-item-name">${escHtml(name)}</div>
+      <div class="chat-item-preview">${previewText}</div>
+    </div>
+  </div>`;
+}
+
+async function openChatWindow(chatId) {
+  currentChatId = chatId;
+  document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+  const ci = document.getElementById('ci_' + chatId);
+  if (ci) ci.classList.add('active');
+
+  let chatPartnerName = 'АРШАН 🛍';
+  const isAdmin = adminId && currentUser.uid === adminId;
+  if (isAdmin) {
+    const uSnap = await window.dbGet(window.dbRef(window.db, `users/${chatId}`));
+    chatPartnerName = uSnap.exists() ? uSnap.val().username : chatId;
+  }
+
+  document.getElementById('chatWindow').innerHTML = `
+    <div class="chat-header">
+      <button onclick="closeChatWindow()" style="background:none;border:none;cursor:pointer;padding:6px;color:var(--text-muted);display:flex;align-items:center;border-radius:8px;margin-right:4px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="chat-avatar">${chatPartnerName[0].toUpperCase()}</div>
+      <div class="chat-header-info">
+        <h3>${escHtml(chatPartnerName)}</h3>
+        <p>АРШАН — маркетплейс</p>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-area">
+      <button class="attach-btn" onclick="document.getElementById('chatImageInput').click()" title="Прикрепить фото">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </button>
+      <input type="file" id="chatImageInput" accept="image/*" style="display:none" onchange="handleChatImage(this.files)">
+      <textarea id="chatInput" placeholder="Написать сообщение..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();doSendMsg();}"></textarea>
+      <button class="send-btn" onclick="doSendMsg()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>`;
+
+  // Listen messages
+  window.dbOnValue(window.dbRef(window.db, `chats/${chatId}/messages`), snap => {
+    const msgs = document.getElementById('chatMessages');
+    if (!msgs) return;
+    if (!snap.exists()) { msgs.innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--text-muted)">Начните диалог</div>'; return; }
+    const entries = Object.entries(snap.val()).sort((a,b) => a[1].ts - b[1].ts);
+    msgs.innerHTML = entries.map(([msgId, m]) => {
+      const isMe = m.senderId === currentUser.uid;
+      const canDelete = isMe || isAdmin;
+      const content = m.type === 'image'
+        ? `<img src="${m.imageUrl}" class="msg-img" onclick="window.open('${m.imageUrl}','_blank')" alt="фото">`
+        : escHtml(m.text);
+      return `<div class="msg ${isMe?'me':'them'}">
+        ${canDelete ? `<button class="msg-del" onclick="deleteMessage('${chatId}','${msgId}')" title="Удалить сообщение">✕</button>` : ''}
+        ${content}
+        <div class="msg-time">${new Date(m.ts).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</div>
+      </div>`;
+    }).join('');
+    msgs.scrollTop = msgs.scrollHeight;
+  });
+}
+window.openChatWindow = openChatWindow;
+
+async function deleteMessage(chatId, msgId) {
+  if (!confirm('Удалить это сообщение?')) return;
+  try {
+    await window.dbSet(window.dbRef(window.db, `chats/${chatId}/messages/${msgId}`), null);
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'error');
+  }
+}
+window.deleteMessage = deleteMessage;
+
+async function handleChatImage(files) {
+  if (!files || !files.length || !currentChatId) return;
+  const file = files[0];
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    toast('Загружаем фото...', '');
+    try {
+      const url = await uploadToImgBB(e.target.result);
+      await sendMessage(currentChatId, '', 'image', url);
+    } catch(err) {
+      toast('Не удалось загрузить фото', 'error');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+window.handleChatImage = handleChatImage;
+
+function closeChatWindow() {
+  currentChatId = null;
+  document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('chatWindow').innerHTML = `
+    <div class="no-chat">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Выберите чат</span>
+    </div>`;
+}
+window.closeChatWindow = closeChatWindow;
+
+function pickCat(el, val) {
+  document.querySelectorAll('.cat-pick-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('newCategory').value = val;
+  applyFreeCategoryLogic(val);
+}
+window.pickCat = pickCat;
+
+function applyFreeCategoryLogic(val) {
+  const priceInput = document.getElementById('newPrice');
+  const freeNote = document.getElementById('freeNote');
+  if (val === FREE_CATEGORY) {
+    priceInput.value = '0';
+    priceInput.disabled = true;
+    priceInput.style.opacity = '0.6';
+    freeNote.style.display = 'block';
+  } else {
+    priceInput.disabled = false;
+    priceInput.style.opacity = '1';
+    freeNote.style.display = 'none';
+    if (priceInput.value === '0') priceInput.value = '';
+  }
+}
+window.applyFreeCategoryLogic = applyFreeCategoryLogic;
+
+async function doSendMsg() {
+  if (!currentChatId) return;
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  await sendMessage(currentChatId, text);
+}
+window.doSendMsg = doSendMsg;
+
+async function sendMessage(chatId, text, type = 'text', imageUrl = null, refProductId = null) {
+  const msgRef = window.dbPush(window.dbRef(window.db, `chats/${chatId}/messages`));
+  const payload = {
+    senderId: currentUser.uid,
+    senderName: currentUser.username,
+    ts: Date.now(),
+    type
+  };
+  if (type === 'image') payload.imageUrl = imageUrl;
+  else payload.text = text;
+  if (refProductId) payload.refProductId = refProductId;
+  await window.dbSet(msgRef, payload);
+}
+
+// ===== NOTIFICATIONS =====
+let notifMsgCounts = {};
+let notifChatsListenerAttached = false;
+
+function maybeShowNotifBanner() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    const banner = document.getElementById('notifBanner');
+    if (banner) banner.style.display = 'flex';
+  }
+}
+window.maybeShowNotifBanner = maybeShowNotifBanner;
+
+function dismissNotifBanner() {
+  const banner = document.getElementById('notifBanner');
+  if (banner) banner.style.display = 'none';
+}
+window.dismissNotifBanner = dismissNotifBanner;
+
+async function enableNotifications() {
+  if (!('Notification' in window)) {
+    toast('Ваш браузер не поддерживает уведомления', 'error');
+    return;
+  }
+  try {
+    const perm = await Notification.requestPermission();
+    dismissNotifBanner();
+    if (perm === 'granted') {
+      toast('Уведомления включены 🔔', 'success');
+      new Notification('АРШАН', { body: 'Теперь мы сообщим о новых сообщениях в чате', icon: 'image.png' });
+    } else {
+      toast('Уведомления не разрешены', 'error');
+    }
+  } catch(e) {}
+}
+window.enableNotifications = enableNotifications;
+
+function processChatMessagesForNotif(chatId, messagesObj, chatDisplayName) {
+  const count = messagesObj ? Object.keys(messagesObj).length : 0;
+  const prevCount = notifMsgCounts[chatId];
+  notifMsgCounts[chatId] = count;
+  if (prevCount === undefined) return; // пропускаем первую загрузку — уведомлять не нужно
+  if (count > prevCount && messagesObj) {
+    const all = Object.values(messagesObj).sort((a,b) => b.ts - a.ts);
+    const latest = all[0];
+    if (latest && latest.senderId !== currentUser.uid) {
+      notifyNewMessage(chatDisplayName, latest, chatId);
+    }
+  }
+}
+
+function notifyNewMessage(name, msg, chatId) {
+  // Если человек прямо сейчас смотрит именно этот чат и вкладка активна — не дублируем уведомление
+  const onChatsPage = document.getElementById('page-chats')?.classList.contains('active');
+  if (document.hasFocus() && onChatsPage && currentChatId === chatId) return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const body = msg.type === 'image' ? '📷 Отправил(а) фото' : (msg.text || '').substring(0, 90);
+  try {
+    const n = new Notification(`💬 ${name}`, { body, icon: 'image.png' });
+    n.onclick = () => {
+      window.focus();
+      showPage('chats');
+      setTimeout(() => openChatWindow(chatId), 150);
+      n.close();
+    };
+  } catch(e) {}
+}
+
+function startNotificationWatcher() {
+  if (!currentUser || notifChatsListenerAttached) return;
+  notifChatsListenerAttached = true;
+  notifMsgCounts = {};
+  const isAdminUser = adminId && currentUser.uid === adminId;
+  if (isAdminUser) {
+    window.dbOnValue(window.dbRef(window.db, 'chats'), async snap => {
+      if (!snap.exists()) return;
+      const chats = snap.val();
+      for (const cid in chats) {
+        let name = cid;
+        try {
+          const uSnap = await window.dbGet(window.dbRef(window.db, `users/${cid}`));
+          if (uSnap.exists()) name = uSnap.val().username;
+        } catch(e) {}
+        processChatMessagesForNotif(cid, chats[cid].messages, name);
+      }
+    });
+  } else {
+    window.dbOnValue(window.dbRef(window.db, `chats/${currentUser.uid}/messages`), snap => {
+      processChatMessagesForNotif(currentUser.uid, snap.exists() ? snap.val() : null, 'АРШАН');
+    });
+  }
+}
+window.startNotificationWatcher = startNotificationWatcher;
+
+function stopNotificationWatcher() {
+  notifChatsListenerAttached = false;
+  notifMsgCounts = {};
+}
+
+// ===== UTILS =====
+function formatPrice(p) {
+  if (!p && p !== 0) return '';
+  return new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB',maximumFractionDigits:0}).format(p);
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  const m = Math.floor(diff/60000);
+  if (m < 1) return 'только что';
+  if (m < 60) return m + ' мин назад';
+  const h = Math.floor(m/60);
+  if (h < 24) return h + ' ч назад';
+  return Math.floor(h/24) + ' дн назад';
+}
+
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showErr(el, msg) {
+  el.textContent = msg; el.classList.add('show');
+}
+
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + type + ' show';
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ===== LIGHTBOX =====
+let lbScale = 1;
+let lbDragging = false;
+let lbDragStart = { x: 0, y: 0 };
+let lbTranslate = { x: 0, y: 0 };
+
+function openLightbox(src) {
+  const overlay = document.getElementById('lightboxOverlay');
+  const img = document.getElementById('lightboxImg');
+  const wrap = document.getElementById('lightboxImgWrap');
+  img.src = src;
+  lbScale = 1;
+  lbTranslate = { x: 0, y: 0 };
+  applyLbTransform();
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Mouse wheel zoom
+  wrap._wheelHandler = (e) => { e.preventDefault(); lbZoom(e.deltaY < 0 ? 0.15 : -0.15); };
+  wrap.addEventListener('wheel', wrap._wheelHandler, { passive: false });
+
+  // Drag to pan
+  wrap._mousedown = (e) => { lbDragging = true; wrap.classList.add('grabbing'); lbDragStart = { x: e.clientX - lbTranslate.x, y: e.clientY - lbTranslate.y }; };
+  wrap._mousemove = (e) => { if (!lbDragging) return; lbTranslate = { x: e.clientX - lbDragStart.x, y: e.clientY - lbDragStart.y }; applyLbTransform(); };
+  wrap._mouseup = () => { lbDragging = false; wrap.classList.remove('grabbing'); };
+  wrap.addEventListener('mousedown', wrap._mousedown);
+  document.addEventListener('mousemove', wrap._mousemove);
+  document.addEventListener('mouseup', wrap._mouseup);
+
+  // Touch pinch/pan
+  let lastDist = 0;
+  wrap._touchstart = (e) => {
+    if (e.touches.length === 2) { lastDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); }
+    else if (e.touches.length === 1) { lbDragging = true; lbDragStart = { x: e.touches[0].clientX - lbTranslate.x, y: e.touches[0].clientY - lbTranslate.y }; }
+  };
+  wrap._touchmove = (e) => {
+    e.preventDefault();
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      lbZoom((dist - lastDist) * 0.01); lastDist = dist;
+    } else if (e.touches.length === 1 && lbDragging) {
+      lbTranslate = { x: e.touches[0].clientX - lbDragStart.x, y: e.touches[0].clientY - lbDragStart.y }; applyLbTransform();
+    }
+  };
+  wrap._touchend = () => { lbDragging = false; };
+  wrap.addEventListener('touchstart', wrap._touchstart, { passive: false });
+  wrap.addEventListener('touchmove', wrap._touchmove, { passive: false });
+  wrap.addEventListener('touchend', wrap._touchend);
+}
+window.openLightbox = openLightbox;
+
+function closeLightbox() {
+  const overlay = document.getElementById('lightboxOverlay');
+  const wrap = document.getElementById('lightboxImgWrap');
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  if (wrap._wheelHandler) wrap.removeEventListener('wheel', wrap._wheelHandler);
+  if (wrap._mousedown) wrap.removeEventListener('mousedown', wrap._mousedown);
+  if (wrap._mousemove) document.removeEventListener('mousemove', wrap._mousemove);
+  if (wrap._mouseup) document.removeEventListener('mouseup', wrap._mouseup);
+  if (wrap._touchstart) wrap.removeEventListener('touchstart', wrap._touchstart);
+  if (wrap._touchmove) wrap.removeEventListener('touchmove', wrap._touchmove);
+  if (wrap._touchend) wrap.removeEventListener('touchend', wrap._touchend);
+}
+window.closeLightbox = closeLightbox;
+
+function closeLightboxOnBg(e) {
+  if (e.target === document.getElementById('lightboxOverlay')) closeLightbox();
+}
+window.closeLightboxOnBg = closeLightboxOnBg;
+
+function lbZoom(delta) {
+  lbScale = Math.min(5, Math.max(0.5, lbScale + delta));
+  applyLbTransform();
+}
+window.lbZoom = lbZoom;
+
+function lbZoomReset() {
+  lbScale = 1; lbTranslate = { x: 0, y: 0 }; applyLbTransform();
+}
+window.lbZoomReset = lbZoomReset;
+
+function applyLbTransform() {
+  const img = document.getElementById('lightboxImg');
+  img.style.transform = `translate(${lbTranslate.x}px, ${lbTranslate.y}px) scale(${lbScale})`;
+}
+
+// Keyboard ESC to close lightbox
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('lightboxOverlay').classList.contains('open')) closeLightbox();
+});
+
+// Upload zone drag-drop
+const uz = document.getElementById('uploadZone');
+uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag'); });
+uz.addEventListener('dragleave', () => uz.classList.remove('drag'));
+uz.addEventListener('drop', e => {
+  e.preventDefault(); uz.classList.remove('drag');
+  handlePhotos(e.dataTransfer.files);
+});
+</script>
+</body>
+</html>
